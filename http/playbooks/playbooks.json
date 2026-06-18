@@ -1,0 +1,524 @@
+{
+  "type": "workflow_collections",
+  "data": [
+    {
+      "@type": "WorkflowCollection",
+      "name": "Sample - HTTP - 1.0.0",
+      "description": "HTTP sample playbooks demonstrate get, post, put, head, delete, patch, option requests",
+      "visible": true,
+      "image": "/api/3/images/5b47a8030d9fd7065b6ba8d1",
+      "workflows": [
+        {
+          "@type": "Workflow",
+          "triggerLimit": null,
+          "name": "HTTP DELETE request",
+          "description": "Perform HTTP DELETE request on configured server with provided input parameters",
+          "collection": "/api/3/workflow_collections/580186fc-19ce-4829-811b-f1fbe07a95da",
+          "tag": "#HTTP",
+          "isActive": false,
+          "singleRecordExecution": false,
+          "parameters": [],
+          "synchronous": false,
+          "triggerStep": "/api/3/workflow_steps/5ac399cf-74bb-4a5c-981f-6d3e8c1e9f1c",
+          "steps": [
+            {
+              "@type": "WorkflowStep",
+              "name": "Alerts",
+              "description": null,
+              "arguments": {
+                "route": "7d106a1d-226c-4a0f-bf32-b8336b099d82",
+                "title": "HTTP: HTTP DELETE request",
+                "resources": [
+                  "alerts"
+                ],
+                "inputVariables": [],
+                "step_variables": []
+              },
+              "status": null,
+              "left": "20",
+              "top": "20",
+              "stepType": "/api/3/workflow_step_types/f414d039-bb0d-4e59-9c39-a8f1e880b18a",
+              "uuid": "5ac399cf-74bb-4a5c-981f-6d3e8c1e9f1c"
+            },
+            {
+              "@type": "WorkflowStep",
+              "name": "HTTP DELETE request",
+              "description": null,
+              "arguments": {
+                "name": "HTTP",
+                "config": "f5322f77-5d4e-4da9-a60f-f73fad83ab3f",
+                "params": {
+                  "data": "",
+                  "header": "",
+                  "rest_api": "/api/",
+                  "parameter": "",
+                  "json_format": true
+                },
+                "version": "1.0.0",
+                "connector": "http",
+                "operation": "http_delete",
+                "operationTitle": "HTTP DELETE request",
+                "step_variables": []
+              },
+              "status": null,
+              "left": "191",
+              "top": "120",
+              "stepType": "/api/3/workflow_step_types/0bfed618-0316-11e7-93ae-92361f002671",
+              "uuid": "85edfece-453e-4cd0-bdb8-5ec7ed332ff1"
+            }
+          ],
+          "routes": [
+            {
+              "@type": "WorkflowRoute",
+              "uuid": "73279a9a-7b9a-4416-8fa5-6d483443d548",
+              "name": "Alerts -> HTTP DELETE request",
+              "label": null,
+              "isExecuted": false,
+              "targetStep": "/api/3/workflow_steps/85edfece-453e-4cd0-bdb8-5ec7ed332ff1",
+              "sourceStep": "/api/3/workflow_steps/5ac399cf-74bb-4a5c-981f-6d3e8c1e9f1c"
+            }
+          ],
+          "uuid": "43908eb0-c297-4d47-97b7-ebb248b96d84"
+        },
+        {
+          "@type": "Workflow",
+          "triggerLimit": null,
+          "name": "HTTP HEAD request",
+          "description": "Perform HTTP HEAD request on configured server with provided input parameters",
+          "collection": "/api/3/workflow_collections/580186fc-19ce-4829-811b-f1fbe07a95da",
+          "tag": "#HTTP",
+          "isActive": false,
+          "singleRecordExecution": false,
+          "parameters": [],
+          "synchronous": false,
+          "triggerStep": "/api/3/workflow_steps/429857b6-900e-45c4-967b-7e04d6d022d4",
+          "steps": [
+            {
+              "@type": "WorkflowStep",
+              "name": "Alerts",
+              "description": null,
+              "arguments": {
+                "route": "a12e96dd-e7b9-491a-a9c4-0eabcb48b0ea",
+                "title": "HTTP: HTTP HEAD request",
+                "resources": [
+                  "alerts"
+                ],
+                "inputVariables": [],
+                "step_variables": []
+              },
+              "status": null,
+              "left": "20",
+              "top": "20",
+              "stepType": "/api/3/workflow_step_types/f414d039-bb0d-4e59-9c39-a8f1e880b18a",
+              "uuid": "429857b6-900e-45c4-967b-7e04d6d022d4"
+            },
+            {
+              "@type": "WorkflowStep",
+              "name": "HTTP HEAD request",
+              "description": null,
+              "arguments": {
+                "name": "HTTP",
+                "config": "f5322f77-5d4e-4da9-a60f-f73fad83ab3f",
+                "params": {
+                  "data": "",
+                  "header": "",
+                  "rest_api": "/api/",
+                  "parameter": "",
+                  "json_format": true
+                },
+                "version": "1.0.0",
+                "connector": "http",
+                "operation": "http_head",
+                "operationTitle": "HTTP HEAD request",
+                "step_variables": []
+              },
+              "status": null,
+              "left": "220",
+              "top": "130",
+              "stepType": "/api/3/workflow_step_types/0bfed618-0316-11e7-93ae-92361f002671",
+              "uuid": "88abe0e1-cd1b-4385-b904-2f482de05219"
+            }
+          ],
+          "routes": [
+            {
+              "@type": "WorkflowRoute",
+              "uuid": "7602ee28-147c-4209-b770-8c5a169e637f",
+              "name": "Alerts -> HTTP HEAD request",
+              "label": null,
+              "isExecuted": false,
+              "targetStep": "/api/3/workflow_steps/88abe0e1-cd1b-4385-b904-2f482de05219",
+              "sourceStep": "/api/3/workflow_steps/429857b6-900e-45c4-967b-7e04d6d022d4"
+            }
+          ],
+          "uuid": "cec4003a-cb86-4798-8444-0a78c15ac26d"
+        },
+        {
+          "@type": "Workflow",
+          "triggerLimit": null,
+          "name": "HTTP OPTIONS Request",
+          "description": "Perform HTTP OPTIONS request on configured server with provided input parameters",
+          "collection": "/api/3/workflow_collections/580186fc-19ce-4829-811b-f1fbe07a95da",
+          "tag": "#HTTP",
+          "isActive": false,
+          "singleRecordExecution": false,
+          "parameters": [],
+          "synchronous": false,
+          "triggerStep": "/api/3/workflow_steps/4a823f82-5801-47fb-91cf-560150b52e5c",
+          "steps": [
+            {
+              "@type": "WorkflowStep",
+              "name": "Alerts",
+              "description": null,
+              "arguments": {
+                "route": "14a6f38b-6445-4e79-832a-37360fbfda53",
+                "title": "HTTP: HTTP OPTIONS Request",
+                "resources": [
+                  "alerts"
+                ],
+                "inputVariables": [],
+                "step_variables": []
+              },
+              "status": null,
+              "left": "20",
+              "top": "20",
+              "stepType": "/api/3/workflow_step_types/f414d039-bb0d-4e59-9c39-a8f1e880b18a",
+              "uuid": "4a823f82-5801-47fb-91cf-560150b52e5c"
+            },
+            {
+              "@type": "WorkflowStep",
+              "name": "HTTP OPTIONS Request",
+              "description": null,
+              "arguments": {
+                "name": "HTTP",
+                "config": "f5322f77-5d4e-4da9-a60f-f73fad83ab3f",
+                "params": {
+                  "data": "",
+                  "header": "",
+                  "rest_api": "/api/",
+                  "parameter": "",
+                  "json_format": true
+                },
+                "version": "1.0.0",
+                "connector": "http",
+                "operation": "http_options",
+                "operationTitle": "HTTP OPTIONS Request",
+                "step_variables": {
+                  "output_data": "{{vars.result}}"
+                }
+              },
+              "status": null,
+              "left": "209",
+              "top": "140",
+              "stepType": "/api/3/workflow_step_types/0bfed618-0316-11e7-93ae-92361f002671",
+              "uuid": "5eecc799-1de1-44dc-a6ee-fe95ddb72dd0"
+            }
+          ],
+          "routes": [
+            {
+              "@type": "WorkflowRoute",
+              "uuid": "db5e9f40-d5ac-42bf-b976-e2c5dbb47d9d",
+              "name": "Alerts -> HTTP OPTIONS Request",
+              "label": null,
+              "isExecuted": false,
+              "targetStep": "/api/3/workflow_steps/5eecc799-1de1-44dc-a6ee-fe95ddb72dd0",
+              "sourceStep": "/api/3/workflow_steps/4a823f82-5801-47fb-91cf-560150b52e5c"
+            }
+          ],
+          "uuid": "a6bb6d10-545f-4ec4-bb4e-9fb682628bbf"
+        },
+        {
+          "@type": "Workflow",
+          "triggerLimit": null,
+          "name": "HTTP PATCH request",
+          "description": "Perform HTTP PATCH request on configured server with provided input parameters",
+          "collection": "/api/3/workflow_collections/580186fc-19ce-4829-811b-f1fbe07a95da",
+          "tag": "#HTTP",
+          "isActive": false,
+          "singleRecordExecution": false,
+          "parameters": [],
+          "synchronous": false,
+          "triggerStep": "/api/3/workflow_steps/12d22676-9e30-44be-ac1e-96cf3da8fc33",
+          "steps": [
+            {
+              "@type": "WorkflowStep",
+              "name": "Alerts",
+              "description": null,
+              "arguments": {
+                "route": "0e179bd8-f533-417c-b493-0fcdaa5e3a16",
+                "title": "HTTP: HTTP PATCH request",
+                "resources": [
+                  "alerts"
+                ],
+                "inputVariables": [],
+                "step_variables": []
+              },
+              "status": null,
+              "left": "20",
+              "top": "20",
+              "stepType": "/api/3/workflow_step_types/f414d039-bb0d-4e59-9c39-a8f1e880b18a",
+              "uuid": "12d22676-9e30-44be-ac1e-96cf3da8fc33"
+            },
+            {
+              "@type": "WorkflowStep",
+              "name": "HTTP PATCH request",
+              "description": null,
+              "arguments": {
+                "name": "HTTP",
+                "config": "f5322f77-5d4e-4da9-a60f-f73fad83ab3f",
+                "params": {
+                  "data": "",
+                  "header": "",
+                  "rest_api": "/api/",
+                  "parameter": "",
+                  "json_format": true
+                },
+                "version": "1.0.0",
+                "connector": "http",
+                "operation": "http_patch",
+                "operationTitle": "HTTP PATCH request",
+                "step_variables": []
+              },
+              "status": null,
+              "left": "220",
+              "top": "111",
+              "stepType": "/api/3/workflow_step_types/0bfed618-0316-11e7-93ae-92361f002671",
+              "uuid": "1bcd6b17-b580-4dfc-9fb8-d5d6a01f2ecf"
+            }
+          ],
+          "routes": [
+            {
+              "@type": "WorkflowRoute",
+              "uuid": "0c47bde6-ae9d-4549-9de6-7d77e7057a46",
+              "name": "Alerts -> HTTP PATCH request",
+              "label": null,
+              "isExecuted": false,
+              "targetStep": "/api/3/workflow_steps/1bcd6b17-b580-4dfc-9fb8-d5d6a01f2ecf",
+              "sourceStep": "/api/3/workflow_steps/12d22676-9e30-44be-ac1e-96cf3da8fc33"
+            }
+          ],
+          "uuid": "17acb97a-8e10-4177-9883-3f7c434d2c5b"
+        },
+        {
+          "@type": "Workflow",
+          "triggerLimit": null,
+          "name": "HTTP PUT Request",
+          "description": "Perform HTTP PUT request on configured server with provided input parameters",
+          "collection": "/api/3/workflow_collections/580186fc-19ce-4829-811b-f1fbe07a95da",
+          "tag": "#HTTP",
+          "isActive": false,
+          "singleRecordExecution": false,
+          "parameters": [],
+          "synchronous": false,
+          "triggerStep": "/api/3/workflow_steps/f3b76d58-389f-41da-9c88-a949d6cbfe15",
+          "steps": [
+            {
+              "@type": "WorkflowStep",
+              "name": "HTTP PUT Request",
+              "description": null,
+              "arguments": {
+                "name": "HTTP",
+                "config": "f5322f77-5d4e-4da9-a60f-f73fad83ab3f",
+                "params": {
+                  "data": "",
+                  "header": "",
+                  "rest_api": "/api/",
+                  "parameter": "",
+                  "json_format": true
+                },
+                "version": "1.0.0",
+                "connector": "http",
+                "operation": "http_put",
+                "operationTitle": "HTTP PUT Request",
+                "step_variables": []
+              },
+              "status": null,
+              "left": "192",
+              "top": "100",
+              "stepType": "/api/3/workflow_step_types/0bfed618-0316-11e7-93ae-92361f002671",
+              "uuid": "46bdce36-9fb9-426f-a988-5385d2d4eebc"
+            },
+            {
+              "@type": "WorkflowStep",
+              "name": "Alerts",
+              "description": null,
+              "arguments": {
+                "route": "9c198adb-7ff4-4c81-a826-02191e048185",
+                "title": "HTTP: HTTP PUT Request",
+                "resources": [
+                  "alerts"
+                ],
+                "inputVariables": [],
+                "step_variables": []
+              },
+              "status": null,
+              "left": "20",
+              "top": "20",
+              "stepType": "/api/3/workflow_step_types/f414d039-bb0d-4e59-9c39-a8f1e880b18a",
+              "uuid": "f3b76d58-389f-41da-9c88-a949d6cbfe15"
+            }
+          ],
+          "routes": [
+            {
+              "@type": "WorkflowRoute",
+              "uuid": "1fd50d89-72ec-4c21-ab7f-c6e3d816ff50",
+              "name": "Alerts -> HTTP PUT Request",
+              "label": null,
+              "isExecuted": false,
+              "targetStep": "/api/3/workflow_steps/46bdce36-9fb9-426f-a988-5385d2d4eebc",
+              "sourceStep": "/api/3/workflow_steps/f3b76d58-389f-41da-9c88-a949d6cbfe15"
+            }
+          ],
+          "uuid": "0f234411-492b-4d6f-b71b-5f300834e988"
+        },
+        {
+          "@type": "Workflow",
+          "triggerLimit": null,
+          "name": "HTTP GET Request",
+          "description": "Perform HTTP GET request on configured server with provided input parameters",
+          "collection": "/api/3/workflow_collections/580186fc-19ce-4829-811b-f1fbe07a95da",
+          "tag": "#HTTP",
+          "isActive": false,
+          "singleRecordExecution": false,
+          "parameters": [],
+          "synchronous": false,
+          "triggerStep": "/api/3/workflow_steps/0f385838-1b80-476e-9aad-e1a1c180f118",
+          "steps": [
+            {
+              "@type": "WorkflowStep",
+              "name": "Alerts",
+              "description": null,
+              "arguments": {
+                "route": "2ba5c52a-f955-4a06-8674-d6dd14287dcc",
+                "title": "HTTP: HTTP GET Request",
+                "resources": [
+                  "alerts"
+                ],
+                "inputVariables": [],
+                "step_variables": []
+              },
+              "status": null,
+              "left": "20",
+              "top": "20",
+              "stepType": "/api/3/workflow_step_types/f414d039-bb0d-4e59-9c39-a8f1e880b18a",
+              "uuid": "0f385838-1b80-476e-9aad-e1a1c180f118"
+            },
+            {
+              "@type": "WorkflowStep",
+              "name": "HTTP GET Request",
+              "description": null,
+              "arguments": {
+                "name": "HTTP",
+                "config": "f5322f77-5d4e-4da9-a60f-f73fad83ab3f",
+                "params": {
+                  "header": "{\n  \"Content-Type\": \"text/html\"\n}",
+                  "rest_api": "/users/",
+                  "parameter": "",
+                  "json_format": false
+                },
+                "version": "1.0.0",
+                "connector": "http",
+                "operation": "http_get",
+                "operationTitle": "HTTP GET Request",
+                "step_variables": {
+                  "output_data": "{{vars.result}}"
+                }
+              },
+              "status": null,
+              "left": "208",
+              "top": "140",
+              "stepType": "/api/3/workflow_step_types/0bfed618-0316-11e7-93ae-92361f002671",
+              "uuid": "118ec7d7-d452-48e1-89c8-b5fff42c5aa3"
+            }
+          ],
+          "routes": [
+            {
+              "@type": "WorkflowRoute",
+              "uuid": "cf958afb-c3e9-4b03-a1c8-dfbe11ef2445",
+              "name": "Alerts -> HTTP GET Request",
+              "label": null,
+              "isExecuted": false,
+              "targetStep": "/api/3/workflow_steps/118ec7d7-d452-48e1-89c8-b5fff42c5aa3",
+              "sourceStep": "/api/3/workflow_steps/0f385838-1b80-476e-9aad-e1a1c180f118"
+            }
+          ],
+          "uuid": "fd288493-8262-49e0-a8fc-461ff955575e"
+        },
+        {
+          "@type": "Workflow",
+          "triggerLimit": null,
+          "name": "HTTP POST Request",
+          "description": "Perform HTTP POST request on configured server with provided input parameters",
+          "collection": "/api/3/workflow_collections/580186fc-19ce-4829-811b-f1fbe07a95da",
+          "tag": "#HTTP",
+          "isActive": false,
+          "singleRecordExecution": false,
+          "parameters": [],
+          "synchronous": false,
+          "triggerStep": "/api/3/workflow_steps/f4930e98-1351-4369-8ed1-0f54d6da8d5d",
+          "steps": [
+            {
+              "@type": "WorkflowStep",
+              "name": "HTTP POST Request",
+              "description": null,
+              "arguments": {
+                "name": "HTTP",
+                "config": "f5322f77-5d4e-4da9-a60f-f73fad83ab3f",
+                "params": {
+                  "data": "",
+                  "header": "",
+                  "rest_api": "/api/",
+                  "parameter": "",
+                  "json_format": true
+                },
+                "version": "1.0.0",
+                "connector": "http",
+                "operation": "http_post",
+                "operationTitle": "HTTP POST Request",
+                "step_variables": {
+                  "output_data": "{{vars.result}}"
+                }
+              },
+              "status": null,
+              "left": "191",
+              "top": "120",
+              "stepType": "/api/3/workflow_step_types/0bfed618-0316-11e7-93ae-92361f002671",
+              "uuid": "c3d5ba82-a4a7-4914-afc6-23ac09ed6e1a"
+            },
+            {
+              "@type": "WorkflowStep",
+              "name": "Alerts",
+              "description": null,
+              "arguments": {
+                "route": "3dfadaa6-3cfd-48e4-921d-7a82a814d06e",
+                "title": "HTTP: HTTP POST Request",
+                "resources": [
+                  "alerts"
+                ],
+                "inputVariables": [],
+                "step_variables": []
+              },
+              "status": null,
+              "left": "20",
+              "top": "20",
+              "stepType": "/api/3/workflow_step_types/f414d039-bb0d-4e59-9c39-a8f1e880b18a",
+              "uuid": "f4930e98-1351-4369-8ed1-0f54d6da8d5d"
+            }
+          ],
+          "routes": [
+            {
+              "@type": "WorkflowRoute",
+              "uuid": "8c739b8b-4daa-4ea1-af62-9989b559e8c4",
+              "name": "Alerts -> HTTP POST Request",
+              "label": null,
+              "isExecuted": false,
+              "targetStep": "/api/3/workflow_steps/c3d5ba82-a4a7-4914-afc6-23ac09ed6e1a",
+              "sourceStep": "/api/3/workflow_steps/f4930e98-1351-4369-8ed1-0f54d6da8d5d"
+            }
+          ],
+          "uuid": "1a1fad71-c800-4ebf-afe7-23f596444292"
+        }
+      ],
+      "uuid": "580186fc-19ce-4829-811b-f1fbe07a95da"
+    }
+  ]
+}

@@ -1,0 +1,1719 @@
+{
+  "name": "http",
+  "label": "HTTP",
+  "description": "Versatile generic HTTP connector. Supports any REST API: configurable auth (None / Basic / Bearer / API Key Header / API Key Query Param / OAuth2 Client Credentials with token caching), per-call auth override, connection-level custom headers, query params, body shaping (json / form / multipart / raw), retry with backoff, follow-redirects toggle, response path plucking, RFC 5988 / next-URL / page-param pagination, and scheduled data ingestion.",
+  "publisher": "Fortinet",
+  "cs_approved": true,
+  "cs_compatible": true,
+  "version": "2.0.4",
+  "category": "HTTP Requests",
+  "help_online": "",
+  "icon_small_name": "HTTP_Connector_small.png",
+  "icon_large_name": "HTTP_Connector_medium.png",
+  "ingestion_supported": true,
+  "ingestion_modes": [
+    "scheduled"
+  ],
+  "tags": [
+    "GenericHTTP",
+    "RESTAPI"
+  ],
+  "ingestion_config_schema": [
+    {
+      "title": "Fetch URL",
+      "name": "fetch_url",
+      "type": "text",
+      "required": true,
+      "editable": true,
+      "visible": true,
+      "tooltip": "Absolute URL or path (relative to the configured Server URL) to call on each scheduled ingestion run."
+    },
+    {
+      "title": "HTTP Method",
+      "name": "method",
+      "type": "select",
+      "required": false,
+      "editable": true,
+      "visible": true,
+      "options": [
+        "GET",
+        "POST"
+      ],
+      "value": "GET"
+    },
+    {
+      "title": "Response Path",
+      "name": "response_path",
+      "type": "text",
+      "required": false,
+      "editable": true,
+      "visible": true,
+      "placeholder": "data.results",
+      "tooltip": "Dot/bracket path to the records list inside the response body (e.g. 'data.items', 'results[0].records'). Leave blank if the body itself is a list."
+    },
+    {
+      "title": "Pagination Mode",
+      "name": "pagination_mode",
+      "type": "select",
+      "required": false,
+      "editable": true,
+      "visible": true,
+      "options": [
+        "none",
+        "link_header",
+        "next_url_path",
+        "page_param"
+      ],
+      "value": "none",
+      "tooltip": "How to walk paginated responses. link_header = RFC 5988 Link header. next_url_path = next URL is at a JSON path. page_param = bump a numeric query parameter."
+    },
+    {
+      "title": "Next URL Path (next_url_path mode)",
+      "name": "next_url_path",
+      "type": "text",
+      "required": false,
+      "editable": true,
+      "visible": true,
+      "placeholder": "links.next or meta.nextUrl"
+    },
+    {
+      "title": "Page Param Name (page_param mode)",
+      "name": "page_param_name",
+      "type": "text",
+      "required": false,
+      "editable": true,
+      "visible": true,
+      "value": "page"
+    },
+    {
+      "title": "Max Pages",
+      "name": "max_pages",
+      "type": "integer",
+      "required": false,
+      "editable": true,
+      "visible": true,
+      "value": 50
+    }
+  ],
+  "ingest_mapping_template": {
+    "source": "Generic HTTP",
+    "sourceData": "{{ vars | toJSON }}",
+    "__replace": ""
+  },
+  "configuration": {
+    "fields": [
+      {
+        "title": "Server URL",
+        "name": "server_url",
+        "type": "text",
+        "required": false,
+        "editable": true,
+        "visible": true,
+        "placeholder": "https://api.example.com",
+        "tooltip": "Base URL prepended to relative request paths. Leave blank if every action will use absolute URLs.",
+        "description": "Base URL prepended to relative request paths. Leave blank if every action will use absolute URLs.",
+        "isOnChange": false
+      },
+      {
+        "title": "Port",
+        "name": "port",
+        "type": "integer",
+        "required": false,
+        "editable": true,
+        "visible": true,
+        "tooltip": "Optional port appended to the Server URL when the URL does not already specify one.",
+        "isOnChange": false
+      },
+      {
+        "title": "Authentication Type",
+        "name": "auth_type",
+        "type": "select",
+        "required": true,
+        "editable": true,
+        "visible": true,
+        "options": [
+          "None",
+          "Basic",
+          "Bearer Token",
+          "API Key Header",
+          "API Key Query Param",
+          "OAuth2 Client Credentials",
+          "Token Login"
+        ],
+        "value": "None",
+        "tooltip": "Default authentication method applied to every request. Individual actions can override this per-call.",
+        "description": "Default authentication method. Per-action override is supported.",
+        "onchange": {
+          "None": [],
+          "Basic": [
+            {
+              "title": "Username",
+              "name": "basic_username",
+              "type": "text",
+              "required": true,
+              "editable": true,
+              "visible": true,
+              "isOnChange": true,
+              "onChangeParam": "Authentication Type",
+              "onChangeOption": "Basic"
+            },
+            {
+              "title": "Password",
+              "name": "basic_password",
+              "type": "password",
+              "required": true,
+              "editable": true,
+              "visible": true,
+              "value": "",
+              "isOnChange": true,
+              "onChangeParam": "Authentication Type",
+              "onChangeOption": "Basic"
+            }
+          ],
+          "Bearer Token": [
+            {
+              "title": "Bearer Token",
+              "name": "bearer_token",
+              "type": "password",
+              "required": true,
+              "editable": true,
+              "visible": true,
+              "value": "",
+              "tooltip": "Sent as 'Authorization: Bearer <token>'.",
+              "isOnChange": true,
+              "onChangeParam": "Authentication Type",
+              "onChangeOption": "Bearer Token"
+            }
+          ],
+          "API Key Header": [
+            {
+              "title": "Header Name",
+              "name": "api_key_header_name",
+              "type": "text",
+              "required": true,
+              "editable": true,
+              "visible": true,
+              "placeholder": "X-API-Key",
+              "isOnChange": true,
+              "onChangeParam": "Authentication Type",
+              "onChangeOption": "API Key Header"
+            },
+            {
+              "title": "API Key",
+              "name": "api_key",
+              "type": "password",
+              "required": true,
+              "editable": true,
+              "visible": true,
+              "value": "",
+              "isOnChange": true,
+              "onChangeParam": "Authentication Type",
+              "onChangeOption": "API Key Header"
+            }
+          ],
+          "API Key Query Param": [
+            {
+              "title": "Query Param Name",
+              "name": "api_key_param_name",
+              "type": "text",
+              "required": true,
+              "editable": true,
+              "visible": true,
+              "placeholder": "api_key",
+              "isOnChange": true,
+              "onChangeParam": "Authentication Type",
+              "onChangeOption": "API Key Query Param"
+            },
+            {
+              "title": "API Key",
+              "name": "api_key",
+              "type": "password",
+              "required": true,
+              "editable": true,
+              "visible": true,
+              "value": "",
+              "isOnChange": true,
+              "onChangeParam": "Authentication Type",
+              "onChangeOption": "API Key Query Param"
+            }
+          ],
+          "OAuth2 Client Credentials": [
+            {
+              "title": "Token URL",
+              "name": "oauth_token_url",
+              "type": "text",
+              "required": true,
+              "editable": true,
+              "visible": true,
+              "placeholder": "https://idp.example.com/oauth/token",
+              "isOnChange": true,
+              "onChangeParam": "Authentication Type",
+              "onChangeOption": "OAuth2 Client Credentials"
+            },
+            {
+              "title": "Client ID",
+              "name": "oauth_client_id",
+              "type": "text",
+              "required": true,
+              "editable": true,
+              "visible": true,
+              "isOnChange": true,
+              "onChangeParam": "Authentication Type",
+              "onChangeOption": "OAuth2 Client Credentials"
+            },
+            {
+              "title": "Client Secret",
+              "name": "oauth_client_secret",
+              "type": "password",
+              "required": true,
+              "editable": true,
+              "visible": true,
+              "value": "",
+              "isOnChange": true,
+              "onChangeParam": "Authentication Type",
+              "onChangeOption": "OAuth2 Client Credentials"
+            },
+            {
+              "title": "Scope (Optional)",
+              "name": "oauth_scope",
+              "type": "text",
+              "required": false,
+              "editable": true,
+              "visible": true,
+              "isOnChange": true,
+              "onChangeParam": "Authentication Type",
+              "onChangeOption": "OAuth2 Client Credentials"
+            }
+          ],
+          "Token Login": [
+            {
+              "title": "Login URL",
+              "name": "login_url",
+              "type": "text",
+              "required": true,
+              "editable": true,
+              "visible": true,
+              "placeholder": "/api/login or absolute https://...",
+              "tooltip": "Endpoint to POST credentials to. Relative paths join the Server URL.",
+              "isOnChange": true,
+              "onChangeParam": "Authentication Type",
+              "onChangeOption": "Token Login"
+            },
+            {
+              "title": "Login Body Type",
+              "name": "login_body_type",
+              "type": "select",
+              "options": [
+                "json",
+                "header_only"
+              ],
+              "value": "json",
+              "required": false,
+              "editable": true,
+              "visible": true,
+              "tooltip": "json: send username/password as a JSON body. header_only: send no body — credentials go in Login Request Headers only (e.g. Yeti x-yeti-apikey).",
+              "isOnChange": true,
+              "onChangeParam": "Authentication Type",
+              "onChangeOption": "Token Login"
+            },
+            {
+              "title": "Login Request Headers",
+              "name": "login_request_headers",
+              "type": "password",
+              "required": false,
+              "editable": true,
+              "visible": true,
+              "placeholder": "{\"x-yeti-apikey\": \"<key>\"}",
+              "tooltip": "JSON object of headers to send on the login request. Required for header_only body type. Also accepted for json mode (merged with the credential body).",
+              "isOnChange": true,
+              "onChangeParam": "Authentication Type",
+              "onChangeOption": "Token Login"
+            },
+            {
+              "title": "Username",
+              "name": "login_username",
+              "type": "text",
+              "required": false,
+              "editable": true,
+              "visible": true,
+              "tooltip": "Required for json body type. Leave blank when using header_only.",
+              "isOnChange": true,
+              "onChangeParam": "Authentication Type",
+              "onChangeOption": "Token Login"
+            },
+            {
+              "title": "Password",
+              "name": "login_password",
+              "type": "password",
+              "required": false,
+              "editable": true,
+              "visible": true,
+              "value": "",
+              "tooltip": "Required for json body type. Leave blank when using header_only.",
+              "isOnChange": true,
+              "onChangeParam": "Authentication Type",
+              "onChangeOption": "Token Login"
+            },
+            {
+              "title": "Username Field",
+              "name": "login_username_field",
+              "type": "text",
+              "required": false,
+              "editable": true,
+              "visible": true,
+              "value": "username",
+              "tooltip": "JSON body key for the username. Default 'username'.",
+              "isOnChange": true,
+              "onChangeParam": "Authentication Type",
+              "onChangeOption": "Token Login"
+            },
+            {
+              "title": "Password Field",
+              "name": "login_password_field",
+              "type": "text",
+              "required": false,
+              "editable": true,
+              "visible": true,
+              "value": "password",
+              "isOnChange": true,
+              "onChangeParam": "Authentication Type",
+              "onChangeOption": "Token Login"
+            },
+            {
+              "title": "Token Response Path",
+              "name": "login_token_path",
+              "type": "text",
+              "required": false,
+              "editable": true,
+              "visible": true,
+              "placeholder": "access_token (leave blank for plain-body token)",
+              "tooltip": "Dot-path inside the JSON login response. Leave blank if the response body is the bare token string (e.g. filebrowser).",
+              "isOnChange": true,
+              "onChangeParam": "Authentication Type",
+              "onChangeOption": "Token Login"
+            },
+            {
+              "title": "Auth Header Name",
+              "name": "login_header_name",
+              "type": "text",
+              "required": false,
+              "editable": true,
+              "visible": true,
+              "value": "X-Auth",
+              "tooltip": "Header to send the token on. e.g. 'X-Auth' (filebrowser), 'Authorization' (with Bearer prefix).",
+              "isOnChange": true,
+              "onChangeParam": "Authentication Type",
+              "onChangeOption": "Token Login"
+            },
+            {
+              "title": "Auth Header Prefix",
+              "name": "login_header_prefix",
+              "type": "text",
+              "required": false,
+              "editable": true,
+              "visible": true,
+              "placeholder": "Bearer ",
+              "tooltip": "Optional prefix prepended to the token. e.g. 'Bearer ' (note trailing space).",
+              "isOnChange": true,
+              "onChangeParam": "Authentication Type",
+              "onChangeOption": "Token Login"
+            }
+          ]
+        },
+        "isOnChange": false
+      },
+      {
+        "title": "Default Custom Headers",
+        "name": "default_headers",
+        "type": "json",
+        "required": false,
+        "editable": true,
+        "visible": true,
+        "value": {},
+        "tooltip": "Non-sensitive headers attached to every request (e.g. {\"User-Agent\":\"FortiSOAR\"}). DO NOT put secrets here — values are stored in plaintext. For secret headers use 'API Key Header' auth.",
+        "description": "Non-sensitive headers attached to every request. Values are stored in plaintext.",
+        "isOnChange": false
+      },
+      {
+        "title": "Request Timeout (seconds)",
+        "name": "timeout",
+        "type": "integer",
+        "required": false,
+        "editable": true,
+        "visible": true,
+        "value": 60,
+        "isOnChange": false
+      },
+      {
+        "title": "Max Retries",
+        "name": "max_retries",
+        "type": "integer",
+        "required": false,
+        "editable": true,
+        "visible": true,
+        "value": 0,
+        "tooltip": "Number of automatic retries on transient failures. 0 disables retry.",
+        "isOnChange": false
+      },
+      {
+        "title": "Retry Backoff Factor",
+        "name": "backoff_factor",
+        "type": "text",
+        "required": false,
+        "editable": true,
+        "visible": true,
+        "value": "0.5",
+        "tooltip": "urllib3 backoff factor. Sleep between retries = factor * (2^(retry-1)).",
+        "isOnChange": false
+      },
+      {
+        "title": "Retry On Status",
+        "name": "retry_on_status",
+        "type": "text",
+        "required": false,
+        "editable": true,
+        "visible": true,
+        "value": "429,500,502,503,504",
+        "tooltip": "Comma-separated HTTP status codes to retry.",
+        "isOnChange": false
+      },
+      {
+        "title": "Return On HTTP Error",
+        "name": "return_on_error",
+        "type": "checkbox",
+        "required": false,
+        "editable": true,
+        "visible": true,
+        "value": true,
+        "tooltip": "When true, non-2xx responses are returned to the playbook (status_code + body) instead of raising.",
+        "isOnChange": false
+      },
+      {
+        "title": "Verify SSL",
+        "name": "verify_ssl",
+        "type": "checkbox",
+        "required": false,
+        "editable": true,
+        "visible": true,
+        "value": true,
+        "isOnChange": false
+      }
+    ]
+  },
+  "operations": [
+    {
+      "operation": "http_request",
+      "title": "HTTP Request (Any Method)",
+      "annotation": "http_request",
+      "category": "investigation",
+      "description": "Perform an HTTP request with a user-selected method. Most flexible action.",
+      "enabled": true,
+      "parameters": [
+        {
+          "title": "Method",
+          "name": "method",
+          "type": "select",
+          "options": [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE",
+            "HEAD",
+            "OPTIONS"
+          ],
+          "value": "GET",
+          "required": true,
+          "editable": true,
+          "visible": true,
+          "tooltip": "HTTP verb to use for this request."
+        },
+        {
+          "title": "URL or Path",
+          "name": "rest_api",
+          "type": "text",
+          "required": true,
+          "editable": true,
+          "visible": true,
+          "placeholder": "/v1/things or https://other.example.com/api",
+          "tooltip": "Absolute URL or path relative to the configured Server URL. e.g. /api/v1/things or https://other.example.com/endpoint"
+        },
+        {
+          "title": "Query Parameters",
+          "name": "parameter",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Key/value pairs appended to the URL as query string. Accepts {\"key\":\"value\"} or [{\"key\":\"k\",\"value\":\"v\"}] format."
+        },
+        {
+          "title": "Headers",
+          "name": "header",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Additional HTTP headers for this request. Merged with Default Custom Headers from the connection config; per-call values win on conflict."
+        },
+        {
+          "title": "Body Type",
+          "name": "body_type",
+          "type": "select",
+          "options": [
+            "none",
+            "json",
+            "form",
+            "raw",
+            "multipart"
+          ],
+          "value": "none",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "How to encode the request body. json = JSON-encoded object. form = URL-encoded form fields. raw = send the string as-is. multipart = multipart/form-data (file upload). none = no body."
+        },
+        {
+          "title": "Body",
+          "name": "data",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Body payload. Shape depends on Body Type. For 'raw' a string is accepted. For 'multipart' use a dict of fields."
+        },
+        {
+          "title": "Timeout (seconds, override)",
+          "name": "timeout",
+          "type": "integer",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Per-request timeout in seconds. Overrides the connection-level timeout for this step only."
+        },
+        {
+          "title": "Follow Redirects",
+          "name": "follow_redirects",
+          "type": "checkbox",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "value": true,
+          "tooltip": "When enabled, HTTP 3xx redirects are followed automatically. Disable to inspect the redirect response directly."
+        },
+        {
+          "title": "Response Path",
+          "name": "response_path",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "placeholder": "data.results",
+          "tooltip": "Dot/bracket path to pluck from the JSON response body before returning. e.g. 'data.results' or 'items[0].id'. Leave blank to return the full body."
+        },
+        {
+          "title": "Raw Response (binary-safe)",
+          "name": "raw_response",
+          "type": "checkbox",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "value": false,
+          "tooltip": "Return content as base64 instead of parsing. Use for binary downloads."
+        }
+      ],
+      "output_schema": {
+        "status_code": 0,
+        "headers": {},
+        "body": {}
+      }
+    },
+    {
+      "operation": "http_get",
+      "title": "HTTP GET",
+      "annotation": "request_get",
+      "category": "investigation",
+      "description": "Perform an HTTP GET request.",
+      "enabled": true,
+      "parameters": [
+        {
+          "title": "URL or Path",
+          "name": "rest_api",
+          "type": "text",
+          "required": true,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Absolute URL or path relative to the configured Server URL. e.g. /api/v1/things or https://other.example.com/endpoint"
+        },
+        {
+          "title": "Query Parameters",
+          "name": "parameter",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Key/value pairs appended to the URL as query string. Accepts {\"key\":\"value\"} or [{\"key\":\"k\",\"value\":\"v\"}] format."
+        },
+        {
+          "title": "Headers",
+          "name": "header",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Additional HTTP headers for this request. Merged with Default Custom Headers from the connection config; per-call values win on conflict."
+        },
+        {
+          "title": "Timeout (seconds, override)",
+          "name": "timeout",
+          "type": "integer",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Per-request timeout in seconds. Overrides the connection-level timeout for this step only."
+        },
+        {
+          "title": "Follow Redirects",
+          "name": "follow_redirects",
+          "type": "checkbox",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "value": true,
+          "tooltip": "When enabled, HTTP 3xx redirects are followed automatically. Disable to inspect the redirect response directly."
+        },
+        {
+          "title": "Response Path",
+          "name": "response_path",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Dot/bracket path to pluck from the JSON response body before returning. e.g. 'data.results' or 'items[0].id'. Leave blank to return the full body."
+        },
+        {
+          "title": "Raw Response (binary-safe)",
+          "name": "raw_response",
+          "type": "checkbox",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "value": false,
+          "tooltip": "Return raw bytes as base64 instead of parsing the body. Use for binary downloads, PDFs, or responses with non-JSON content types."
+        }
+      ],
+      "output_schema": {
+        "status_code": 0,
+        "headers": {},
+        "body": {}
+      }
+    },
+    {
+      "operation": "http_post",
+      "title": "HTTP POST",
+      "annotation": "request_post",
+      "category": "investigation",
+      "description": "Perform an HTTP POST request.",
+      "enabled": true,
+      "parameters": [
+        {
+          "title": "URL or Path",
+          "name": "rest_api",
+          "type": "text",
+          "required": true,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Absolute URL or path relative to the configured Server URL. e.g. /api/v1/things or https://other.example.com/endpoint"
+        },
+        {
+          "title": "Query Parameters",
+          "name": "parameter",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Key/value pairs appended to the URL as query string. Accepts {\"key\":\"value\"} or [{\"key\":\"k\",\"value\":\"v\"}] format."
+        },
+        {
+          "title": "Headers",
+          "name": "header",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Additional HTTP headers for this request. Merged with Default Custom Headers from the connection config; per-call values win on conflict."
+        },
+        {
+          "title": "Body Type",
+          "name": "body_type",
+          "type": "select",
+          "options": [
+            "none",
+            "json",
+            "form",
+            "raw",
+            "multipart"
+          ],
+          "value": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "How to encode the request body. json = JSON-encoded object. form = URL-encoded form fields. raw = send the string as-is. multipart = multipart/form-data (file upload). none = no body."
+        },
+        {
+          "title": "Body",
+          "name": "data",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Request body payload. Shape depends on Body Type. For json/form pass a dict; for raw pass a string; for multipart pass a dict of field names to values."
+        },
+        {
+          "title": "Timeout (seconds, override)",
+          "name": "timeout",
+          "type": "integer",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Per-request timeout in seconds. Overrides the connection-level timeout for this step only."
+        },
+        {
+          "title": "Follow Redirects",
+          "name": "follow_redirects",
+          "type": "checkbox",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "value": true,
+          "tooltip": "When enabled, HTTP 3xx redirects are followed automatically. Disable to inspect the redirect response directly."
+        },
+        {
+          "title": "Response Path",
+          "name": "response_path",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Dot/bracket path to pluck from the JSON response body before returning. e.g. 'data.results' or 'items[0].id'. Leave blank to return the full body."
+        },
+        {
+          "title": "Raw Response (binary-safe)",
+          "name": "raw_response",
+          "type": "checkbox",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "value": false,
+          "tooltip": "Return raw bytes as base64 instead of parsing the body. Use for binary downloads, PDFs, or responses with non-JSON content types."
+        }
+      ],
+      "output_schema": {
+        "status_code": 0,
+        "headers": {},
+        "body": {}
+      }
+    },
+    {
+      "operation": "http_put",
+      "title": "HTTP PUT",
+      "annotation": "request_put",
+      "category": "investigation",
+      "description": "Perform an HTTP PUT request.",
+      "enabled": true,
+      "parameters": [
+        {
+          "title": "URL or Path",
+          "name": "rest_api",
+          "type": "text",
+          "required": true,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Absolute URL or path relative to the configured Server URL. e.g. /api/v1/things or https://other.example.com/endpoint"
+        },
+        {
+          "title": "Query Parameters",
+          "name": "parameter",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Key/value pairs appended to the URL as query string. Accepts {\"key\":\"value\"} or [{\"key\":\"k\",\"value\":\"v\"}] format."
+        },
+        {
+          "title": "Headers",
+          "name": "header",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Additional HTTP headers for this request. Merged with Default Custom Headers from the connection config; per-call values win on conflict."
+        },
+        {
+          "title": "Body Type",
+          "name": "body_type",
+          "type": "select",
+          "options": [
+            "none",
+            "json",
+            "form",
+            "raw",
+            "multipart"
+          ],
+          "value": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "How to encode the request body. json = JSON-encoded object. form = URL-encoded form fields. raw = send the string as-is. multipart = multipart/form-data (file upload). none = no body."
+        },
+        {
+          "title": "Body",
+          "name": "data",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Request body payload. Shape depends on Body Type. For json/form pass a dict; for raw pass a string; for multipart pass a dict of field names to values."
+        },
+        {
+          "title": "Response Path",
+          "name": "response_path",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Dot/bracket path to pluck from the JSON response body before returning. e.g. 'data.results' or 'items[0].id'. Leave blank to return the full body."
+        }
+      ],
+      "output_schema": {
+        "status_code": 0,
+        "headers": {},
+        "body": {}
+      }
+    },
+    {
+      "operation": "http_patch",
+      "title": "HTTP PATCH",
+      "annotation": "request_patch",
+      "category": "investigation",
+      "description": "Perform an HTTP PATCH request.",
+      "enabled": true,
+      "parameters": [
+        {
+          "title": "URL or Path",
+          "name": "rest_api",
+          "type": "text",
+          "required": true,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Absolute URL or path relative to the configured Server URL. e.g. /api/v1/things or https://other.example.com/endpoint"
+        },
+        {
+          "title": "Query Parameters",
+          "name": "parameter",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Key/value pairs appended to the URL as query string. Accepts {\"key\":\"value\"} or [{\"key\":\"k\",\"value\":\"v\"}] format."
+        },
+        {
+          "title": "Headers",
+          "name": "header",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Additional HTTP headers for this request. Merged with Default Custom Headers from the connection config; per-call values win on conflict."
+        },
+        {
+          "title": "Body Type",
+          "name": "body_type",
+          "type": "select",
+          "options": [
+            "none",
+            "json",
+            "form",
+            "raw",
+            "multipart"
+          ],
+          "value": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "How to encode the request body. json = JSON-encoded object. form = URL-encoded form fields. raw = send the string as-is. multipart = multipart/form-data (file upload). none = no body."
+        },
+        {
+          "title": "Body",
+          "name": "data",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Request body payload. Shape depends on Body Type. For json/form pass a dict; for raw pass a string; for multipart pass a dict of field names to values."
+        },
+        {
+          "title": "Response Path",
+          "name": "response_path",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Dot/bracket path to pluck from the JSON response body before returning. e.g. 'data.results' or 'items[0].id'. Leave blank to return the full body."
+        }
+      ],
+      "output_schema": {
+        "status_code": 0,
+        "headers": {},
+        "body": {}
+      }
+    },
+    {
+      "operation": "http_delete",
+      "title": "HTTP DELETE",
+      "annotation": "request_delete",
+      "category": "investigation",
+      "description": "Perform an HTTP DELETE request.",
+      "enabled": true,
+      "parameters": [
+        {
+          "title": "URL or Path",
+          "name": "rest_api",
+          "type": "text",
+          "required": true,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Absolute URL or path relative to the configured Server URL. e.g. /api/v1/things or https://other.example.com/endpoint"
+        },
+        {
+          "title": "Query Parameters",
+          "name": "parameter",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Key/value pairs appended to the URL as query string. Accepts {\"key\":\"value\"} or [{\"key\":\"k\",\"value\":\"v\"}] format."
+        },
+        {
+          "title": "Headers",
+          "name": "header",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Additional HTTP headers for this request. Merged with Default Custom Headers from the connection config; per-call values win on conflict."
+        },
+        {
+          "title": "Body Type",
+          "name": "body_type",
+          "type": "select",
+          "options": [
+            "none",
+            "json",
+            "form",
+            "raw"
+          ],
+          "value": "none",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "How to encode the request body. json = JSON-encoded object. form = URL-encoded form fields. raw = send the string as-is. multipart = multipart/form-data (file upload). none = no body."
+        },
+        {
+          "title": "Body",
+          "name": "data",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Request body payload. Shape depends on Body Type. For json/form pass a dict; for raw pass a string; for multipart pass a dict of field names to values."
+        },
+        {
+          "title": "Response Path",
+          "name": "response_path",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Dot/bracket path to pluck from the JSON response body before returning. e.g. 'data.results' or 'items[0].id'. Leave blank to return the full body."
+        }
+      ],
+      "output_schema": {
+        "status_code": 0,
+        "headers": {},
+        "body": {}
+      }
+    },
+    {
+      "operation": "http_head",
+      "title": "HTTP HEAD",
+      "annotation": "request_head",
+      "category": "investigation",
+      "description": "Perform an HTTP HEAD request.",
+      "enabled": true,
+      "parameters": [
+        {
+          "title": "URL or Path",
+          "name": "rest_api",
+          "type": "text",
+          "required": true,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Absolute URL or path relative to the configured Server URL. e.g. /api/v1/things or https://other.example.com/endpoint"
+        },
+        {
+          "title": "Headers",
+          "name": "header",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Additional HTTP headers for this request. Merged with Default Custom Headers from the connection config; per-call values win on conflict."
+        }
+      ],
+      "output_schema": {
+        "status_code": 0,
+        "headers": {}
+      }
+    },
+    {
+      "operation": "http_options",
+      "title": "HTTP OPTIONS",
+      "annotation": "request_options",
+      "category": "investigation",
+      "description": "Perform an HTTP OPTIONS request.",
+      "enabled": true,
+      "parameters": [
+        {
+          "title": "URL or Path",
+          "name": "rest_api",
+          "type": "text",
+          "required": true,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Absolute URL or path relative to the configured Server URL. e.g. /api/v1/things or https://other.example.com/endpoint"
+        },
+        {
+          "title": "Headers",
+          "name": "header",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Additional HTTP headers for this request. Merged with Default Custom Headers from the connection config; per-call values win on conflict."
+        }
+      ],
+      "output_schema": {
+        "status_code": 0,
+        "headers": {},
+        "body": {}
+      }
+    },
+    {
+      "operation": "http_paginate",
+      "title": "HTTP Paginate",
+      "annotation": "http_paginate",
+      "category": "investigation",
+      "description": "Walk a paginated endpoint and concatenate the results. Supports RFC 5988 Link header, next-URL-in-body, and bumped page-param modes.",
+      "enabled": true,
+      "parameters": [
+        {
+          "title": "URL or Path",
+          "name": "rest_api",
+          "type": "text",
+          "required": true,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Absolute URL or path relative to the configured Server URL. e.g. /api/v1/things or https://other.example.com/endpoint"
+        },
+        {
+          "title": "Method",
+          "name": "method",
+          "type": "select",
+          "options": [
+            "GET",
+            "POST"
+          ],
+          "value": "GET",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "HTTP verb to use for this request."
+        },
+        {
+          "title": "Query Parameters",
+          "name": "parameter",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Key/value pairs appended to the URL as query string. Accepts {\"key\":\"value\"} or [{\"key\":\"k\",\"value\":\"v\"}] format."
+        },
+        {
+          "title": "Headers",
+          "name": "header",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Additional HTTP headers for this request. Merged with Default Custom Headers from the connection config; per-call values win on conflict."
+        },
+        {
+          "title": "Body Type",
+          "name": "body_type",
+          "type": "select",
+          "options": [
+            "none",
+            "json",
+            "form",
+            "raw"
+          ],
+          "value": "none",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "How to encode the request body. json = JSON-encoded object. form = URL-encoded form fields. raw = send the string as-is. multipart = multipart/form-data (file upload). none = no body."
+        },
+        {
+          "title": "Body",
+          "name": "data",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Request body payload. Shape depends on Body Type. For json/form pass a dict; for raw pass a string; for multipart pass a dict of field names to values."
+        },
+        {
+          "title": "Pagination Mode",
+          "name": "pagination_mode",
+          "type": "select",
+          "options": [
+            "link_header",
+            "next_url_path",
+            "page_param"
+          ],
+          "value": "link_header",
+          "required": true,
+          "editable": true,
+          "visible": true,
+          "tooltip": "How to advance through pages. link_header = follow RFC 5988 Link: <url>; rel=next header. next_url_path = next URL is at a dot-path inside the JSON body. page_param = increment a numeric query parameter."
+        },
+        {
+          "title": "Items Path",
+          "name": "items_path",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "placeholder": "data.results",
+          "tooltip": "Dot/bracket path to the list of records inside each page's response body. e.g. 'data.results'. Leave blank if the body itself is the list."
+        },
+        {
+          "title": "Next URL Path (next_url_path mode)",
+          "name": "next_url_path",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "placeholder": "links.next",
+          "tooltip": "Dot/bracket path inside the response body where the next-page URL is found. Only used in next_url_path mode. e.g. 'links.next' or 'meta.nextUrl'."
+        },
+        {
+          "title": "Page Param Name (page_param mode)",
+          "name": "page_param_name",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "value": "page",
+          "tooltip": "Query parameter name to increment for each page. Only used in page_param mode. e.g. 'page' or 'offset'."
+        },
+        {
+          "title": "Start Page",
+          "name": "start_page",
+          "type": "integer",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "value": 1,
+          "tooltip": "Starting page number for page_param mode."
+        },
+        {
+          "title": "Max Pages",
+          "name": "max_pages",
+          "type": "integer",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "value": 50,
+          "tooltip": "Maximum number of pages to fetch before stopping, regardless of whether more pages exist. Guards against runaway pagination."
+        }
+      ],
+      "output_schema": {
+        "items": [],
+        "pages_fetched": 0,
+        "truncated": false
+      }
+    },
+    {
+      "operation": "fetch_records",
+      "title": "Fetch Records (Ingestion)",
+      "annotation": "fetch_records",
+      "category": "investigation",
+      "description": "Calls a configured endpoint, optionally paginates, plucks records via response_path, and returns them as a flat list. Used by scheduled data ingestion and available on-demand.",
+      "enabled": true,
+      "parameters": [
+        {
+          "title": "Fetch URL",
+          "name": "fetch_url",
+          "type": "text",
+          "required": true,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Absolute URL or path to call for each scheduled ingestion run. Overrides the connection-level Fetch URL if set."
+        },
+        {
+          "title": "Method",
+          "name": "method",
+          "type": "select",
+          "options": [
+            "GET",
+            "POST"
+          ],
+          "value": "GET",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "HTTP verb to use for this request."
+        },
+        {
+          "title": "Query Parameters",
+          "name": "parameter",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Key/value pairs appended to the URL as query string. Accepts {\"key\":\"value\"} or [{\"key\":\"k\",\"value\":\"v\"}] format."
+        },
+        {
+          "title": "Headers",
+          "name": "header",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Additional HTTP headers for this request. Merged with Default Custom Headers from the connection config; per-call values win on conflict."
+        },
+        {
+          "title": "Body Type",
+          "name": "body_type",
+          "type": "select",
+          "options": [
+            "none",
+            "json",
+            "form",
+            "raw"
+          ],
+          "value": "none",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "How to encode the request body. json = JSON-encoded object. form = URL-encoded form fields. raw = send the string as-is. multipart = multipart/form-data (file upload). none = no body."
+        },
+        {
+          "title": "Body",
+          "name": "data",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Request body payload. Shape depends on Body Type. For json/form pass a dict; for raw pass a string; for multipart pass a dict of field names to values."
+        },
+        {
+          "title": "Response Path",
+          "name": "response_path",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "placeholder": "data.results",
+          "tooltip": "Dot/bracket path to pluck from the JSON response body before returning. e.g. 'data.results' or 'items[0].id'. Leave blank to return the full body."
+        },
+        {
+          "title": "Pagination Mode",
+          "name": "pagination_mode",
+          "type": "select",
+          "options": [
+            "none",
+            "link_header",
+            "next_url_path",
+            "page_param"
+          ],
+          "value": "none",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "How to advance through pages. link_header = follow RFC 5988 Link: <url>; rel=next header. next_url_path = next URL is at a dot-path inside the JSON body. page_param = increment a numeric query parameter."
+        },
+        {
+          "title": "Next URL Path (next_url_path mode)",
+          "name": "next_url_path",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Dot/bracket path inside the response body where the next-page URL is found. Only used in next_url_path mode. e.g. 'links.next' or 'meta.nextUrl'."
+        },
+        {
+          "title": "Page Param Name (page_param mode)",
+          "name": "page_param_name",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "value": "page",
+          "tooltip": "Query parameter name to increment for each page. Only used in page_param mode. e.g. 'page' or 'offset'."
+        },
+        {
+          "title": "Max Pages",
+          "name": "max_pages",
+          "type": "integer",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "value": 50,
+          "tooltip": "Maximum number of pages to fetch before stopping, regardless of whether more pages exist. Guards against runaway pagination."
+        }
+      ],
+      "output_schema": {
+        "records": [],
+        "count": 0
+      }
+    },
+    {
+      "operation": "upload_file",
+      "title": "Upload File",
+      "annotation": "upload_file",
+      "category": "investigation",
+      "description": "Stream-upload a file to an arbitrary HTTP endpoint. Accepts a FortiSOAR attachment @id, file IRI, or attachment record. Supports multipart and raw-body modes; never buffers the file through the playbook engine.",
+      "enabled": true,
+      "parameters": [
+        {
+          "title": "URL or Path",
+          "name": "rest_api",
+          "type": "text",
+          "required": true,
+          "editable": true,
+          "visible": true,
+          "placeholder": "/api/resources/{filename}?override=true",
+          "tooltip": "Destination. {filename} placeholder is substituted with the source file's name (URL-encoded)."
+        },
+        {
+          "title": "Method",
+          "name": "method",
+          "type": "select",
+          "options": [
+            "POST",
+            "PUT"
+          ],
+          "value": "POST",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "HTTP verb to use for this request."
+        },
+        {
+          "title": "Attachment @id / IRI",
+          "name": "attachment_id",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "placeholder": "/api/3/attachments/<uuid>",
+          "tooltip": "Pass the attachment's @id, file IRI, or an attachment record object."
+        },
+        {
+          "title": "File IRI (alternative)",
+          "name": "file_iri",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "placeholder": "/api/3/files/<uuid>",
+          "tooltip": "FortiSOAR File IRI (e.g. /api/3/files/<uuid>). Alternative to Attachment @id — use when you already have a direct file reference."
+        },
+        {
+          "title": "Local File Path (advanced)",
+          "name": "file_path",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Optional. Absolute path on the integration agent; bypasses attachment lookup."
+        },
+        {
+          "title": "Filename Override",
+          "name": "filename",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true
+        },
+        {
+          "title": "Upload Mode",
+          "name": "upload_mode",
+          "type": "select",
+          "options": [
+            "multipart",
+            "raw_body"
+          ],
+          "value": "multipart",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "multipart = standard form-file upload. raw_body = file bytes are the request body (filebrowser, S3 PUT, etc.)."
+        },
+        {
+          "title": "Multipart Field Name",
+          "name": "field_name",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "value": "file",
+          "tooltip": "Multipart form field name for the file part. Default is 'file'. Only applies in multipart mode."
+        },
+        {
+          "title": "Extra Multipart Fields",
+          "name": "extra_fields",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Additional form fields to send alongside the file (multipart mode only)."
+        },
+        {
+          "title": "Content Type",
+          "name": "content_type",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "value": "application/octet-stream",
+          "tooltip": "MIME type sent as the file's Content-Type. e.g. 'text/csv', 'application/pdf'. Defaults to application/octet-stream."
+        },
+        {
+          "title": "Query Parameters",
+          "name": "parameter",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Key/value pairs appended to the URL as query string. Accepts {\"key\":\"value\"} or [{\"key\":\"k\",\"value\":\"v\"}] format."
+        },
+        {
+          "title": "Headers",
+          "name": "header",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Additional HTTP headers for this request. Merged with Default Custom Headers from the connection config; per-call values win on conflict."
+        },
+        {
+          "title": "Timeout (seconds, override)",
+          "name": "timeout",
+          "type": "integer",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "value": 300,
+          "tooltip": "Per-request timeout in seconds. Overrides the connection-level timeout for this step only."
+        },
+        {
+          "title": "Follow Redirects",
+          "name": "follow_redirects",
+          "type": "checkbox",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "value": true,
+          "tooltip": "When enabled, HTTP 3xx redirects are followed automatically. Disable to inspect the redirect response directly."
+        },
+        {
+          "title": "Response Path",
+          "name": "response_path",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Dot/bracket path to pluck from the JSON response body before returning. e.g. 'data.results' or 'items[0].id'. Leave blank to return the full body."
+        },
+        {
+          "title": "Raw Response (binary-safe)",
+          "name": "raw_response",
+          "type": "checkbox",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "value": false,
+          "tooltip": "Return raw bytes as base64 instead of parsing the body. Use for binary downloads, PDFs, or responses with non-JSON content types."
+        }
+      ],
+      "output_schema": {
+        "status_code": 0,
+        "headers": {},
+        "body": {},
+        "uploaded": {
+          "filename": "",
+          "bytes": 0,
+          "mode": ""
+        }
+      }
+    },
+    {
+      "operation": "download_file",
+      "title": "Download File",
+      "annotation": "download_file",
+      "category": "investigation",
+      "description": "Download a remote URL and save the response body as a FortiSOAR attachment (or to disk on the integration agent). Streams bytes — large files never go through the playbook engine. The reverse of Upload File.",
+      "enabled": true,
+      "parameters": [
+        {
+          "title": "URL or Path",
+          "name": "rest_api",
+          "type": "text",
+          "required": true,
+          "editable": true,
+          "visible": true,
+          "placeholder": "/path/to/file or https://other.example.com/file.zip",
+          "tooltip": "Absolute URL or path relative to the configured Server URL. e.g. /api/v1/things or https://other.example.com/endpoint"
+        },
+        {
+          "title": "Method",
+          "name": "method",
+          "type": "select",
+          "options": [
+            "GET",
+            "POST"
+          ],
+          "value": "GET",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "GET for normal downloads. POST only if the endpoint requires a request body to produce the file."
+        },
+        {
+          "title": "Create FortiSOAR Attachment",
+          "name": "create_attachment",
+          "type": "checkbox",
+          "value": true,
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "When true (default), creates an Attachment record visible in File Management. When false, leaves the file on the integration agent and returns its path."
+        },
+        {
+          "title": "Attachment Name",
+          "name": "attachment_name",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Display name for the Attachment record. Defaults to the resolved filename."
+        },
+        {
+          "title": "Description",
+          "name": "description",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Description stored on the Attachment record in FortiSOAR."
+        },
+        {
+          "title": "Filename Override",
+          "name": "filename",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Force a specific filename. Otherwise the connector uses Content-Disposition, then the URL basename, then 'download.bin'."
+        },
+        {
+          "title": "Query Parameters",
+          "name": "parameter",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Key/value pairs appended to the URL as query string. Accepts {\"key\":\"value\"} or [{\"key\":\"k\",\"value\":\"v\"}] format."
+        },
+        {
+          "title": "Headers",
+          "name": "header",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Additional HTTP headers for this request. Merged with Default Custom Headers from the connection config; per-call values win on conflict."
+        },
+        {
+          "title": "Body Type",
+          "name": "body_type",
+          "type": "select",
+          "options": [
+            "none",
+            "json",
+            "form",
+            "raw"
+          ],
+          "value": "none",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "How to encode the request body. json = JSON-encoded object. form = URL-encoded form fields. raw = send the string as-is. multipart = multipart/form-data (file upload). none = no body."
+        },
+        {
+          "title": "Body",
+          "name": "data",
+          "type": "json",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "tooltip": "Request body payload. Shape depends on Body Type. For json/form pass a dict; for raw pass a string; for multipart pass a dict of field names to values."
+        },
+        {
+          "title": "Timeout (seconds, override)",
+          "name": "timeout",
+          "type": "integer",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "value": 300,
+          "tooltip": "Per-request timeout in seconds. Overrides the connection-level timeout for this step only."
+        },
+        {
+          "title": "Follow Redirects",
+          "name": "follow_redirects",
+          "type": "checkbox",
+          "required": false,
+          "editable": true,
+          "visible": true,
+          "value": true,
+          "tooltip": "When enabled, HTTP 3xx redirects are followed automatically. Disable to inspect the redirect response directly."
+        }
+      ],
+      "output_schema": {
+        "status_code": 0,
+        "headers": {},
+        "downloaded": {
+          "filename": "",
+          "bytes": 0,
+          "attachment": {},
+          "file_path": ""
+        }
+      }
+    }
+  ]
+}
